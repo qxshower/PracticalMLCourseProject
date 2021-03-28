@@ -1,0 +1,164 @@
+From: <Saved by Blink>
+Snapshot-Content-Location: file:///C:/Users/qxshower/Desktop/Prediction%20Analysis%20Writeup.html
+Subject: 
+Date: Sun, 28 Mar 2021 02:38:30 -0000
+MIME-Version: 1.0
+Content-Type: multipart/related;
+	type="text/html";
+	boundary="----MultipartBoundary--EjeZt81bZFvsZujC4Cjx6LVec4Tb88leXaJOjuvlXt----"
+
+
+------MultipartBoundary--EjeZt81bZFvsZujC4Cjx6LVec4Tb88leXaJOjuvlXt----
+Content-Type: text/html
+Content-ID: <frame-92C572C23975BCFE50D812C39E72C683@mhtml.blink>
+Content-Transfer-Encoding: quoted-printable
+Content-Location: file:///C:/Users/qxshower/Desktop/Prediction%20Analysis%20Writeup.html
+
+<!DOCTYPE html><html><head><meta http-equiv=3D"Content-Type" content=3D"tex=
+t/html; charset=3Dwindows-1252"></head><body>
+
+<h1>Prediction Analysis Process Writeup</h1>
+<h2>1. Load package and Set seed</h2>
+<p><span style=3D"color: #0000ff;">library(caret)</span></p>
+<p><span style=3D"color: #0000ff;">set.seed(12345)</span></p>
+
+<h2>2. Read in Data&nbsp;</h2>
+<p>NOTE: treat blank and invalid data (e.g., #DIV/0!) as <strong>na</strong=
+></p>
+<p><span style=3D"color: #0000ff;">url_train &lt;- "https://d396qusza40orc.=
+cloudfront.net/predmachlearn/pml-training.csv"</span></p>
+<p><span style=3D"color: #0000ff;">url_test &lt;- "https://d396qusza40orc.c=
+loudfront.net/predmachlearn/pml-testing.csv"</span></p>
+<p><span style=3D"color: #0000ff;">data_train &lt;- read.csv(url_train, na.=
+strings =3D c("", "NA", "#DIV/0!"))</span></p>
+<p><span style=3D"color: #0000ff;"> data_test &lt;- read.csv(url_test, na.s=
+trings =3D c("", "NA", "#DIV/0!"))</span></p>
+
+<h2>3. Clean Data</h2>
+<h3><span style=3D"color: #000000;">1) delete columns that contains NA data=
+</span></h3>
+<p><span style=3D"color: #0000ff;">training&lt;-data_train[,colSums(is.na(d=
+ata_train)) =3D=3D 0]</span></p>
+<p><span style=3D"color: #0000ff;">testing&lt;-data_test[,colSums(is.na(dat=
+a_test)) =3D=3D 0]</span></p>
+<h3><strong>2) delete columns (1 to 7) that are not related to the predicti=
+on</strong></h3>
+<p><span style=3D"color: #0000ff;">colnames(training)</span></p>
+<table border=3D"2" bordercolor=3D"grey">
+<tbody>
+<tr>
+<td>[1] "X" "user_name" "raw_timestamp_part_1"<br> [4] "raw_timestamp_part_=
+2" "cvtd_timestamp" "new_window" <br> [7] "num_window" "roll_belt" "pitch_b=
+elt" <br>[10] "yaw_belt" "total_accel_belt" "gyros_belt_x" <br>[13] "gyros_=
+belt_y" "gyros_belt_z" "accel_belt_x" <br>[16] "accel_belt_y" "accel_belt_z=
+" "magnet_belt_x" <br>[19] "magnet_belt_y" "magnet_belt_z" "roll_arm" <br>[=
+22] "pitch_arm" "yaw_arm" "total_accel_arm" <br>[25] "gyros_arm_x" "gyros_a=
+rm_y" "gyros_arm_z" <br>[28] "accel_arm_x" "accel_arm_y" "accel_arm_z" <br>=
+[31] "magnet_arm_x" "magnet_arm_y" "magnet_arm_z" <br>[34] "roll_dumbbell" =
+"pitch_dumbbell" "yaw_dumbbell" <br>[37] "total_accel_dumbbell" "gyros_dumb=
+bell_x" "gyros_dumbbell_y" <br>[40] "gyros_dumbbell_z" "accel_dumbbell_x" "=
+accel_dumbbell_y" <br>[43] "accel_dumbbell_z" "magnet_dumbbell_x" "magnet_d=
+umbbell_y" <br>[46] "magnet_dumbbell_z" "roll_forearm" "pitch_forearm" <br>=
+[49] "yaw_forearm" "total_accel_forearm" "gyros_forearm_x" <br>[52] "gyros_=
+forearm_y" "gyros_forearm_z" "accel_forearm_x" <br>[55] "accel_forearm_y" "=
+accel_forearm_z" "magnet_forearm_x" <br>[58] "magnet_forearm_y" "magnet_for=
+earm_z" "classe"</td>
+</tr>
+</tbody>
+</table>
+<p><span style=3D"color: #0000ff;">training&lt;-training[,-c(1:7)]</span></=
+p>
+<p><span style=3D"color: #0000ff;">testing &lt;-testing[,-c(1:7)]</span></p=
+>
+
+<h2><span style=3D"color: #0000ff;"><span style=3D"color: #000000;">4. Spli=
+t Data into Train and Validation Sets</span></span></h2>
+<p><span style=3D"color: #0000ff;">inTrain &lt;- createDataPartition(y=3Dtr=
+aining$classe, p=3D0.75, list=3DFALSE)</span></p>
+<p><span style=3D"color: #0000ff;">InTraining &lt;- training[inTrain, ]</sp=
+an></p>
+<p><span style=3D"color: #0000ff;">InTesting &lt;- training[-inTrain, ]</sp=
+an></p>
+
+<h2>5. Train Different Models&nbsp;</h2>
+<h3>1) Decision Tree</h3>
+<p><span style=3D"color: #0000ff;">model_dt &lt;- train(classe ~ ., data=3D=
+InTraining, method=3D"rpart")</span></p>
+<p><span style=3D"color: #0000ff;">predict_dt &lt;- predict(model_dt, InTes=
+ting)</span></p>
+<p><span style=3D"color: #0000ff;">confusionMatrix(as.factor(InTesting$clas=
+se), predict_dt)</span></p>
+<table border=3D"2" bordercolor=3D"grey">
+<tbody>
+<tr>
+<td>
+<p>Confusion Matrix and Statistics</p>
+<p>Reference<br>Prediction A B C D E<br> A 1252 30 90 0 23<br> B 396 317 23=
+6 0 0<br> C 434 24 397 0 0<br> D 343 151 310 0 0<br> E 114 132 229 0 426</p=
+>
+<p>Overall Statistics<br> <br> Accuracy : 0.4878 <br> 95% CI : (0.4737, 0.5=
+019)<br> No Information Rate : 0.5177 <br> P-Value [Acc &gt; NIR] : 1 <br> =
+<br> Kappa : 0.3306 <br> <br> Mcnemar's Test P-Value : NA</p>
+<p>Statistics by Class:</p>
+<p>Class: A Class: B Class: C Class: D Class: E<br>Sensitivity 0.4931 0.484=
+71 0.31458 NA 0.94878<br>Specificity 0.9395 0.85129 0.87424 0.8361 0.89338<=
+br>Pos Pred Value 0.8975 0.33404 0.46433 NA 0.47281<br>Neg Pred Value 0.633=
+2 0.91479 0.78637 NA 0.99425<br>Prevalence 0.5177 0.13336 0.25734 0.0000 0.=
+09156<br>Detection Rate 0.2553 0.06464 0.08095 0.0000 0.08687<br>Detection =
+Prevalence 0.2845 0.19352 0.17435 0.1639 0.18373<br>Balanced Accuracy 0.716=
+3 0.66800 0.59441 NA 0.92108</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<h3>2) Random Forest</h3>
+<p><span style=3D"color: #0000ff;">model_rf &lt;- train(classe ~ ., data=3D=
+InTraining, method=3D"rf")</span></p>
+<p><span style=3D"color: #0000ff;">predict_rf &lt;- predict(model_rf, InTes=
+ting)</span></p>
+<p><span style=3D"color: #0000ff;">confusionMatrix(as.factor(InTesting$clas=
+se), predict_rf)</span></p>
+<table border=3D"2" bordercolor=3D"grey">
+<tbody>
+<tr>
+<td>
+<p>Confusion Matrix and Statistics</p>
+<p>Reference<br>Prediction A B C D E<br> A 1395 0 0 0 0<br> B 1 947 1 0 0<b=
+r> C 0 6 849 0 0<br> D 0 0 14 785 5<br> E 0 0 0 0 901</p>
+<p>Overall Statistics<br> <br> Accuracy : 0.9945 <br> 95% CI : (0.992, 0.99=
+64)<br> No Information Rate : 0.2847 <br> P-Value [Acc &gt; NIR] : &lt; 2.2=
+e-16 <br> <br> Kappa : 0.993 <br> <br> Mcnemar's Test P-Value : NA</p>
+<p>Statistics by Class:</p>
+<p>Class: A Class: B Class: C Class: D Class: E<br>Sensitivity 0.9993 0.993=
+7 0.9826 1.0000 0.9945<br>Specificity 1.0000 0.9995 0.9985 0.9954 1.0000<br=
+>Pos Pred Value 1.0000 0.9979 0.9930 0.9764 1.0000<br>Neg Pred Value 0.9997=
+ 0.9985 0.9963 1.0000 0.9988<br>Prevalence 0.2847 0.1943 0.1762 0.1601 0.18=
+47<br>Detection Rate 0.2845 0.1931 0.1731 0.1601 0.1837<br>Detection Preval=
+ence 0.2845 0.1935 0.1743 0.1639 0.1837<br>Balanced Accuracy 0.9996 0.9966 =
+0.9906 0.9977 0.9972</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Validation results: though Random Forest took a much longer time=
+ to train, it results in a much higher accuracy of perdiction, so I will us=
+e this model to predict the testing data set.</strong></p>
+
+<h2><strong>6. Prediction on testing data</strong></h2>
+<p><span style=3D"color: #0000ff;"> predict(model_rf, testing)</span></p>
+<table border=3D"2" bordercolor=3D"grey">
+<tbody>
+<tr>
+<td style=3D"width: 311px;">[1] B A B A A E D B A A B C B A E E A B B B<br>=
+Levels: A B C D E</td>
+</tr>
+</tbody>
+</table>
+<p><br><br></p>
+<p>&nbsp;</p>
+
+
+
+</body></html>
+------MultipartBoundary--EjeZt81bZFvsZujC4Cjx6LVec4Tb88leXaJOjuvlXt------
